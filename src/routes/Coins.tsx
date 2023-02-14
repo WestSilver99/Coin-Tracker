@@ -1,36 +1,30 @@
 import { useEffect, useState } from "react";
-import { Helmet } from "react-helmet";
-import { useQuery } from "react-query";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { fetchCoins } from "../api";
 
-const Container = styled.div`
+const Containter = styled.div`
   padding: 0px 20px;
   max-width: 480px;
   margin: 0 auto;
 `;
-
-const Header = styled.header`
-  height: 10vh;
+const Header = styled.div`
+  height: 15vh;
   display: flex;
   justify-content: center;
   align-items: center;
 `;
-
 const CoinsList = styled.ul``;
 
 const Coin = styled.li`
   background-color: white;
   color: ${(props) => props.theme.bgColor};
   margin-bottom: 10px;
-  padding: 20px;
   border-radius: 15px;
   a {
     display: flex;
     padding: 20px;
-    transition: color 0.2s ease-in;
     align-items: center;
+    transition: color 0.2s ease-in;
   }
   &:hover {
     a {
@@ -38,12 +32,12 @@ const Coin = styled.li`
     }
   }
 `;
-
-const Title = styled.h1`
-  color: ${(props) => props.theme.accentColor};
+const Title = styled.div`
   font-size: 48px;
+  color: ${(props) => props.theme.accentColor};
 `;
-const Loader = styled.div`
+
+const Loader = styled.span`
   text-align: center;
   display: block;
 `;
@@ -53,7 +47,8 @@ const Img = styled.img`
   height: 35px;
   margin-right: 10px;
 `;
-interface Icoin {
+
+interface CoinInterface {
   id: string;
   name: string;
   symbol: string;
@@ -62,22 +57,28 @@ interface Icoin {
   is_active: boolean;
   type: string;
 }
-function Coins() {
-  const { isLoading, data } = useQuery<Icoin[]>("allCoins", fetchCoins);
 
+function Coins() {
+  const [coins, setCoins] = useState<CoinInterface[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    (async () => {
+      const response = await fetch("https://api.coinpaprika.com/v1/coins");
+      const json = await response.json();
+      setCoins(json.slice(0, 100));
+      setLoading(false);
+    })();
+  }, []);
   return (
-    <Container>
-      <Helmet>
-        <title>Coin</title>
-      </Helmet>
+    <Containter>
       <Header>
-        <Title>코인</Title>
+        <Title>Coin</Title>
       </Header>
-      {isLoading ? (
+      {loading ? (
         <Loader>Loading...</Loader>
       ) : (
         <CoinsList>
-          {data?.slice(0, 100).map((coin) => (
+          {coins.map((coin) => (
             <Coin key={coin.id}>
               <Link
                 to={{
@@ -94,7 +95,7 @@ function Coins() {
           ))}
         </CoinsList>
       )}
-    </Container>
+    </Containter>
   );
 }
 
